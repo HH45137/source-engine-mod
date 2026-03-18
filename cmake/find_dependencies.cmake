@@ -5,8 +5,16 @@
 # ============================================================================
 
 if(WIN32)
-    # These are typically always available on Windows
-    # We add them as imports for the entire project
+    # Find BZip2 (required for engine)
+    find_package(BZip2 QUIET)
+    if(BZIP2_FOUND)
+        message(STATUS "BZip2 found: ${BZIP2_VERSION}")
+    else()
+        message(WARNING "BZip2 not found, some features may be disabled")
+    endif()
+
+    # Find Zlib (required)
+    find_package(ZLIB QUIET)
 
 # ============================================================================
 # Unix/Linux/BSD required libraries

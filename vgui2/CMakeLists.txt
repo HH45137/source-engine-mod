@@ -2,6 +2,7 @@
 
 add_library(vgui2 STATIC
     src/vgui.cpp
+    ${CMAKE_SOURCE_DIR}/public/vgui_controls/vgui_controls.cpp
 )
 
 target_include_directories(vgui2 PUBLIC

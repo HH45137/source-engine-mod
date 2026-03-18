@@ -1,8 +1,18 @@
 # stub_steam - Steam API stub
 
-add_library(stub_steam SHARED
-    steam_api.cpp
-)
+# On Windows, build as SHARED to generate an import library (.lib) 
+# that properly exports symbols for both regular linking and __imp_ import linking
+if(WIN32)
+    add_library(stub_steam SHARED
+        steam_api.cpp
+    )
+    # Define STEAM_API_EXPORTS when building the DLL
+    target_compile_definitions(stub_steam PRIVATE STEAM_API_EXPORTS)
+else()
+    add_library(stub_steam STATIC
+        steam_api.cpp
+    )
+endif()
 
 target_include_directories(stub_steam PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

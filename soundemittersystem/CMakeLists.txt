@@ -12,6 +12,7 @@ target_include_directories(soundemittersystem PUBLIC
     ${CMAKE_SOURCE_DIR}/public
     ${CMAKE_SOURCE_DIR}/public/tier0
     ${CMAKE_SOURCE_DIR}/public/tier1
+    ${CMAKE_SOURCE_DIR}/game/shared
 )
 
 target_link_libraries(soundemittersystem PUBLIC
