@@ -21,8 +21,6 @@ target_include_directories(choreoobjects PUBLIC
 target_link_libraries(choreoobjects PUBLIC
     tier0
     tier1
-    tier2
-    tier3
 )
 
 install(TARGETS choreoobjects ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

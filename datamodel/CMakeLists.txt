@@ -30,8 +30,6 @@ target_link_libraries(datamodel PUBLIC
     tier1
     tier2
     tier3
-    datacache
-    dmxloader
 )
 
 install(TARGETS datamodel ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

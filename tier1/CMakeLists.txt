@@ -58,6 +58,8 @@ endif()
 
 # Defines
 target_compile_definitions(tier1 PUBLIC TIER1_STATIC_LIB=1)
+# VSTDLIB is static, so don't use DLL import
+target_compile_definitions(tier1 PUBLIC VSTDLIB_DLL_EXPORT=0)
 
 # Includes
 target_include_directories(tier1 PUBLIC

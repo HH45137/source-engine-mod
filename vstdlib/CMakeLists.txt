@@ -7,7 +7,6 @@ add_library(vstdlib STATIC
     KeyValuesSystem.cpp
     random.cpp
     vcover.cpp
-    ${CMAKE_SOURCE_DIR}/public/tier0/memoverride.cpp
 )
 
 # Platform-specific sources

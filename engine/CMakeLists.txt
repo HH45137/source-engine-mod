@@ -79,11 +79,53 @@ target_link_libraries(engine PUBLIC
     inputsystem
     network
     vstdlib
+    dmxloader
+    datamodel
+    bitmap
+    vtf
+    mathlib
 )
 
 # Platform libs
 if(WIN32)
-    target_link_libraries(engine PRIVATE dsound d3d9 dxguid)
+    target_link_libraries(engine PRIVATE
+        user32
+        winmm
+        wininet
+        dsound
+        dxguid
+        gdi32
+        bzip2
+    )
+endif()
+
+# Android specific libs
+if(ANDROID)
+    target_link_libraries(engine PRIVATE
+        ssl
+        crypto
+    )
+endif()
+
+# macOS specific libs
+if(APPLE AND NOT BUILD_DEDICATED)
+    target_link_libraries(engine PRIVATE
+        "-framework AppKit"
+        "-framework CoreAudio"
+        "-framework AudioToolbox"
+        "-framework SystemConfiguration"
+    )
+endif()
+
+# Optional libraries (may not exist in all builds)
+find_library(OPENAL_LIBRARY NAMES openal)
+if(OPENAL_LIBRARY)
+    target_link_libraries(engine PUBLIC ${OPENAL_LIBRARY})
+endif()
+
+find_library(CURL_LIBRARY NAMES curl)
+if(CURL_LIBRARY)
+    target_link_libraries(engine PUBLIC ${CURL_LIBRARY})
 endif()
 
 install(TARGETS engine RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})

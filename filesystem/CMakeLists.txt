@@ -9,7 +9,6 @@ add_library(filesystem SHARED
     ${CMAKE_SOURCE_DIR}/public/kevvaluescompiler.cpp
     ${CMAKE_SOURCE_DIR}/public/zip_utils.cpp
     QueuedLoader.cpp
-    ${CMAKE_SOURCE_DIR}/public/tier0/memoverride.cpp
 )
 
 # Platform-specific sources
@@ -24,6 +23,7 @@ target_compile_definitions(filesystem PRIVATE
     FILESYSTEM_STDIO_EXPORTS=1
     DONT_PROTECT_FILEIO_FUNCTIONS=1
     SUPPORT_PACKED_STORE=1
+    LAUNCHERONLY=1
 )
 
 # Includes

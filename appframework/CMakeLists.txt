@@ -49,11 +49,21 @@ target_link_libraries(appframework PUBLIC
     tier0
     tier1
     tier2
+    tier3
 )
 
 # SDL dependency
 if(USE_SDL AND SDL2_FOUND)
     target_link_libraries(appframework PRIVATE ${SDL2_LIBRARIES})
+endif()
+
+# macOS specific libs
+if(APPLE)
+    target_link_libraries(appframework PRIVATE
+        "-framework Foundation"
+        "-framework AppKit"
+        "-framework IOKit"
+    )
 endif()
 
 # Installation
