@@ -20,6 +20,10 @@ ConVar snd_audioqueue( "snd_audioqueue", "1" );
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+#if defined( WIN32 )
+#include "snd_dev_steamaudio.h"
+#endif
+
 bool snd_firsttime = true;
 
 /* 
@@ -69,6 +73,10 @@ IAudioDevice *IAudioDevice::AutoDetectInit( bool waveOnly )
 	if ( IsPC() )
 	{
 #if defined( WIN32 ) && !defined( USE_SDL )
+	if (true)
+	{
+		pDevice = Audio_CreateSteamAudioDevice();
+	} else {
 		if ( waveOnly )
 		{
 			pDevice = Audio_CreateWaveDevice();
@@ -93,6 +101,7 @@ IAudioDevice *IAudioDevice::AutoDetectInit( bool waveOnly )
 		{
 			pDevice = Audio_CreateWaveDevice();
 		}
+	}
 #elif defined(OSX)
 		if ( !CommandLine()->CheckParm( "-snd_openal" ) )
 		{
