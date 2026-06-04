@@ -63,6 +63,12 @@ private:
   IPLContext m_steamAudioContext = nullptr;
   IPLAudioSettings m_steamAudioSettings{};
   IPLHRTF m_steamAudioHrtf{};
+  IPLAudioBuffer m_steamAudioBuffer;
+
+  IPLVector3 m_listenerPosition;
+  IPLVector3 m_listenerForward;
+  IPLVector3 m_listenerRight;
+  IPLVector3 m_listenerUp;
 
   int m_deviceSampleCount;
 };
@@ -115,7 +121,15 @@ bool CAudioDeviceSteamAudio::Init(void) {
   return true;
 }
 
-void CAudioDeviceSteamAudio::CAudioDeviceSteamAudio::Shutdown(void) {}
+void CAudioDeviceSteamAudio::CAudioDeviceSteamAudio::Shutdown(void) {
+  if (m_steamAudioHrtf) {
+    iplHRTFRelease(&m_steamAudioHrtf);
+  }
+
+  if (m_steamAudioContext) {
+    iplContextRelease(&m_steamAudioContext);
+  }
+}
 
 void CAudioDeviceSteamAudio::PaintEnd(void) {}
 int CAudioDeviceSteamAudio::GetOutputPosition(void) { return 0; }
@@ -135,7 +149,13 @@ void CAudioDeviceSteamAudio::ClearBuffer(void) {}
 void CAudioDeviceSteamAudio::UpdateListener(const Vector &position,
                                             const Vector &forward,
                                             const Vector &right,
-                                            const Vector &up) {}
+                                            const Vector &up) {
+
+  m_listenerPosition = IPLVector3{position.x, position.y, position.z};
+  m_listenerForward = IPLVector3{forward.x, forward.y, forward.z};
+  m_listenerRight = IPLVector3{right.x, right.y, right.z};
+  m_listenerUp = IPLVector3{up.x, up.y, up.z};
+}
 void CAudioDeviceSteamAudio::MixBegin(int sampleCount) {}
 void CAudioDeviceSteamAudio::MixUpsample(int sampleCount, int filtertype) {}
 void CAudioDeviceSteamAudio::Mix8Mono(channel_t *pChannel, char *pData,
