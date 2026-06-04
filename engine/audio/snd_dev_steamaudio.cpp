@@ -1,6 +1,7 @@
 #include "snd_dev_steamaudio.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
+#include "phonon.h"
 #include "tier0/memdbgon.h"
 
 #ifndef DEDICATED
@@ -55,8 +56,13 @@ public:
   int DeviceSampleCount(void) { return m_deviceSampleCount; }
 
 private:
-  IPLContextSettings contextSettings{};
-  IPLContext context = nullptr;
+  bool InitSteamAudioSettings();
+  bool InitHRTF();
+
+  IPLContextSettings m_steamAudioContextSettings{};
+  IPLContext m_steamAudioContext = nullptr;
+  IPLAudioSettings m_steamAudioSettings{};
+  IPLHRTF m_steamAudioHrtf{};
 
   int m_deviceSampleCount;
 };
@@ -87,13 +93,23 @@ bool CAudioDeviceSteamAudio::IsActive(void) { return true; }
 bool CAudioDeviceSteamAudio::Init(void) {
   // this is the version of the Steam Audio API that your program has been
   // compiled against
-  contextSettings.version = STEAMAUDIO_VERSION;
+  m_steamAudioContextSettings.version = STEAMAUDIO_VERSION;
 
-  IPLerror errorCode = iplContextCreate(&contextSettings, &context);
+  IPLerror errorCode =
+      iplContextCreate(&m_steamAudioContextSettings, &m_steamAudioContext);
   if (errorCode) {
     ConColorMsg(errColor, "No Steam Audio device initialized\n");
     return false;
   }
+
+  if (!InitSteamAudioSettings()) {
+    return false;
+  }
+
+  if (!InitHRTF()) {
+    return false;
+  }
+
   ConColorMsg(logColor, "Steam Audio device initialized success\n");
 
   return true;
@@ -149,3 +165,24 @@ void CAudioDeviceSteamAudio::ApplyDSPEffects(int idsp,
                                              portable_samplepair_t *pbufrear,
                                              portable_samplepair_t *pbufcenter,
                                              int samplecount) {}
+
+bool CAudioDeviceSteamAudio::InitSteamAudioSettings() {
+  m_steamAudioSettings.samplingRate = DeviceDmaSpeed();
+  m_steamAudioSettings.frameSize = 512;
+
+  return true;
+}
+
+bool CAudioDeviceSteamAudio::InitHRTF() {
+  IPLHRTFSettings hrtfSettings{};
+
+  hrtfSettings.type = IPL_HRTFTYPE_DEFAULT;
+
+  IPLerror errorCode = iplHRTFCreate(m_steamAudioContext, &m_steamAudioSettings,
+                                     &hrtfSettings, &m_steamAudioHrtf);
+  if (errorCode) {
+    return false;
+  }
+
+  return true;
+}
