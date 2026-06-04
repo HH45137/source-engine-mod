@@ -24,29 +24,17 @@ public:
 
   int PaintBegin(float mixAheadTime, int soundtime, int paintedtime);
   void ClearBuffer(void);
-  void UpdateListener(const Vector &position, const Vector &forward,
-                      const Vector &right, const Vector &up);
+  void UpdateListener(const Vector &position, const Vector &forward, const Vector &right, const Vector &up);
   void MixBegin(int sampleCount);
   void MixUpsample(int sampleCount, int filtertype);
-  void Mix8Mono(channel_t *pChannel, char *pData, int outputOffset,
-                int inputOffset, fixedint rateScaleFix, int outCount,
-                int timecompress);
-  void Mix8Stereo(channel_t *pChannel, char *pData, int outputOffset,
-                  int inputOffset, fixedint rateScaleFix, int outCount,
-                  int timecompress);
-  void Mix16Mono(channel_t *pChannel, short *pData, int outputOffset,
-                 int inputOffset, fixedint rateScaleFix, int outCount,
-                 int timecompress);
-  void Mix16Stereo(channel_t *pChannel, short *pData, int outputOffset,
-                   int inputOffset, fixedint rateScaleFix, int outCount,
-                   int timecompress);
+  void Mix8Mono(channel_t *pChannel, char *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress);
+  void Mix8Stereo(channel_t *pChannel, char *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress);
+  void Mix16Mono(channel_t *pChannel, short *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress);
+  void Mix16Stereo(channel_t *pChannel, short *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress);
 
   void TransferSamples(int end);
-  void SpatializeChannel(int volume[CCHANVOLUMES / 2], int master_vol,
-                         const Vector &sourceDir, float gain, float mono);
-  void ApplyDSPEffects(int idsp, portable_samplepair_t *pbuffront,
-                       portable_samplepair_t *pbufrear,
-                       portable_samplepair_t *pbufcenter, int samplecount);
+  void SpatializeChannel(int volume[CCHANVOLUMES / 2], int master_vol, const Vector &sourceDir, float gain, float mono);
+  void ApplyDSPEffects(int idsp, portable_samplepair_t *pbuffront, portable_samplepair_t *pbufrear, portable_samplepair_t *pbufcenter, int samplecount);
 
   const char *DeviceName(void) { return "SteamAudio"; }
   int DeviceChannels(void) { return 2; }
@@ -58,6 +46,19 @@ public:
 private:
   bool InitSteamAudioSettings();
   bool InitHRTF();
+
+  void ConvertEngineBufferToSteamAudio(IPLAudioBuffer *outSteamBuffer, float *inEngineInterleavedData, int numChannels, int numSamples) {
+    if (outSteamBuffer == nullptr) {
+      iplAudioBufferAllocate(m_steamAudioContext, numChannels, numSamples, outSteamBuffer);
+    }
+    iplAudioBufferDeinterleave(m_steamAudioContext, inEngineInterleavedData, outSteamBuffer);
+  }
+
+  void ConvertSteamAudioBufferToEngine(float *outEngineInterleavedData, IPLAudioBuffer *inSteamBuffer) {
+    iplAudioBufferInterleave(m_steamAudioContext, inSteamBuffer, outEngineInterleavedData);
+
+    iplAudioBufferFree(m_steamAudioContext, inSteamBuffer);
+  }
 
   IPLContextSettings m_steamAudioContextSettings{};
   IPLContext m_steamAudioContext = nullptr;
@@ -101,8 +102,7 @@ bool CAudioDeviceSteamAudio::Init(void) {
   // compiled against
   m_steamAudioContextSettings.version = STEAMAUDIO_VERSION;
 
-  IPLerror errorCode =
-      iplContextCreate(&m_steamAudioContextSettings, &m_steamAudioContext);
+  IPLerror errorCode = iplContextCreate(&m_steamAudioContextSettings, &m_steamAudioContext);
   if (errorCode) {
     ConColorMsg(errColor, "No Steam Audio device initialized\n");
     return false;
@@ -133,23 +133,16 @@ void CAudioDeviceSteamAudio::CAudioDeviceSteamAudio::Shutdown(void) {
 
 void CAudioDeviceSteamAudio::PaintEnd(void) {}
 int CAudioDeviceSteamAudio::GetOutputPosition(void) { return 0; }
-void CAudioDeviceSteamAudio::ChannelReset(int entnum, int channelIndex,
-                                          float distanceMod) {}
+void CAudioDeviceSteamAudio::ChannelReset(int entnum, int channelIndex, float distanceMod) {}
 void CAudioDeviceSteamAudio::Pause(void) {}
 void CAudioDeviceSteamAudio::UnPause(void) {}
 float CAudioDeviceSteamAudio::MixDryVolume(void) { return 0.0f; }
 bool CAudioDeviceSteamAudio::Should3DMix(void) { return false; }
 void CAudioDeviceSteamAudio::StopAllSounds(void) {}
 
-int CAudioDeviceSteamAudio::PaintBegin(float mixAheadTime, int soundtime,
-                                       int paintedtime) {
-  return 0;
-}
+int CAudioDeviceSteamAudio::PaintBegin(float mixAheadTime, int soundtime, int paintedtime) { return 0; }
 void CAudioDeviceSteamAudio::ClearBuffer(void) {}
-void CAudioDeviceSteamAudio::UpdateListener(const Vector &position,
-                                            const Vector &forward,
-                                            const Vector &right,
-                                            const Vector &up) {
+void CAudioDeviceSteamAudio::UpdateListener(const Vector &position, const Vector &forward, const Vector &right, const Vector &up) {
 
   m_listenerPosition = IPLVector3{position.x, position.y, position.z};
   m_listenerForward = IPLVector3{forward.x, forward.y, forward.z};
@@ -158,33 +151,14 @@ void CAudioDeviceSteamAudio::UpdateListener(const Vector &position,
 }
 void CAudioDeviceSteamAudio::MixBegin(int sampleCount) {}
 void CAudioDeviceSteamAudio::MixUpsample(int sampleCount, int filtertype) {}
-void CAudioDeviceSteamAudio::Mix8Mono(channel_t *pChannel, char *pData,
-                                      int outputOffset, int inputOffset,
-                                      fixedint rateScaleFix, int outCount,
-                                      int timecompress) {}
-void CAudioDeviceSteamAudio::Mix8Stereo(channel_t *pChannel, char *pData,
-                                        int outputOffset, int inputOffset,
-                                        fixedint rateScaleFix, int outCount,
-                                        int timecompress) {}
-void CAudioDeviceSteamAudio::Mix16Mono(channel_t *pChannel, short *pData,
-                                       int outputOffset, int inputOffset,
-                                       fixedint rateScaleFix, int outCount,
-                                       int timecompress) {}
-void CAudioDeviceSteamAudio::Mix16Stereo(channel_t *pChannel, short *pData,
-                                         int outputOffset, int inputOffset,
-                                         fixedint rateScaleFix, int outCount,
-                                         int timecompress) {}
+void CAudioDeviceSteamAudio::Mix8Mono(channel_t *pChannel, char *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress) {}
+void CAudioDeviceSteamAudio::Mix8Stereo(channel_t *pChannel, char *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress) {}
+void CAudioDeviceSteamAudio::Mix16Mono(channel_t *pChannel, short *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress) {}
+void CAudioDeviceSteamAudio::Mix16Stereo(channel_t *pChannel, short *pData, int outputOffset, int inputOffset, fixedint rateScaleFix, int outCount, int timecompress) {}
 
 void CAudioDeviceSteamAudio::TransferSamples(int end) {}
-void CAudioDeviceSteamAudio::SpatializeChannel(int volume[CCHANVOLUMES / 2],
-                                               int master_vol,
-                                               const Vector &sourceDir,
-                                               float gain, float mono) {}
-void CAudioDeviceSteamAudio::ApplyDSPEffects(int idsp,
-                                             portable_samplepair_t *pbuffront,
-                                             portable_samplepair_t *pbufrear,
-                                             portable_samplepair_t *pbufcenter,
-                                             int samplecount) {}
+void CAudioDeviceSteamAudio::SpatializeChannel(int volume[CCHANVOLUMES / 2], int master_vol, const Vector &sourceDir, float gain, float mono) {}
+void CAudioDeviceSteamAudio::ApplyDSPEffects(int idsp, portable_samplepair_t *pbuffront, portable_samplepair_t *pbufrear, portable_samplepair_t *pbufcenter, int samplecount) {}
 
 bool CAudioDeviceSteamAudio::InitSteamAudioSettings() {
   m_steamAudioSettings.samplingRate = DeviceDmaSpeed();
@@ -198,8 +172,7 @@ bool CAudioDeviceSteamAudio::InitHRTF() {
 
   hrtfSettings.type = IPL_HRTFTYPE_DEFAULT;
 
-  IPLerror errorCode = iplHRTFCreate(m_steamAudioContext, &m_steamAudioSettings,
-                                     &hrtfSettings, &m_steamAudioHrtf);
+  IPLerror errorCode = iplHRTFCreate(m_steamAudioContext, &m_steamAudioSettings, &hrtfSettings, &m_steamAudioHrtf);
   if (errorCode) {
     return false;
   }
